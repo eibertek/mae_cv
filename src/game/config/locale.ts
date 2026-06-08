@@ -3,11 +3,26 @@ import { ES } from "../i18n/es";
 
 export type Lang = "en" | "es";
 
-let _lang: Lang = "en";
+const LS_KEY = "mae_cv_lang";
+
+function initLang(): Lang {
+  if (typeof window === "undefined") return "en";
+  return (localStorage.getItem(LS_KEY) as Lang | null) ?? "en";
+}
+
+let _lang: Lang = initLang();
 
 export const getLang = (): Lang => _lang;
-export const setLang  = (l: Lang) => { _lang = l; };
-export const toggleLang = () => { _lang = _lang === "en" ? "es" : "en"; };
+
+export const setLang = (l: Lang) => {
+  _lang = l;
+  if (typeof window !== "undefined") {
+    localStorage.setItem(LS_KEY, l);
+    window.dispatchEvent(new CustomEvent("mae_cv_langchange", { detail: l }));
+  }
+};
+
+export const toggleLang = () => setLang(_lang === "en" ? "es" : "en");
 
 export const t = (key: string, vars?: Record<string, string | number>): string => {
   const map = _lang === "en" ? EN : ES;

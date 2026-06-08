@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import { CV_DATA } from "@/game/config/cv.config";
+import { PageSubtitle, PageControls } from "./components/PageInfo";
 
 const GameComponent = dynamic(() => import("./components/GameComponent"), {
   ssr: false,
@@ -20,9 +21,7 @@ export default function Home() {
         <h1 className="text-center font-mono text-white text-lg mb-2 tracking-widest">
           🏬 {CV_DATA.name}&apos;s CV
         </h1>
-        <p className="text-center font-mono text-gray-400 text-xs mb-4">
-          {CV_DATA.title} &middot; Curriculum Vitae Interactivo
-        </p>
+        <PageSubtitle title={CV_DATA.title} />
 
         <div
           className="w-full relative bg-black rounded-lg overflow-hidden shadow-2xl border border-gray-800"
@@ -31,13 +30,7 @@ export default function Home() {
           <GameComponent />
         </div>
 
-        <div className="mt-4 font-mono text-gray-500 text-xs text-center space-x-4">
-          <span>⬆⬇⬅➡ / WASD: mover</span>
-          <span>&nbsp;·&nbsp; ESPACIO: interactuar</span>
-          <span>&nbsp;·&nbsp; ESC: salir de tienda</span>
-          <span>&nbsp;·&nbsp; <kbd className="bg-gray-800 text-gray-300 px-1 py-0.5 rounded">L</kbd> cambiar idioma (EN/ES)</span>
-          <span>&nbsp;·&nbsp; <kbd className="bg-gray-800 text-gray-300 px-1 py-0.5 rounded">R</kbd> resetear skills capturadas</span>
-        </div>
+        <PageControls />
 
         <div className="mt-4 flex justify-center gap-6 font-mono text-xs">
           <a
