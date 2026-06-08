@@ -1,101 +1,67 @@
-import Image from "next/image";
+import dynamic from "next/dynamic";
+import { CV_DATA } from "@/game/config/cv.config";
+
+const GameComponent = dynamic(() => import("./components/GameComponent"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center w-full h-full">
+      <div className="text-center font-mono text-white">
+        <div className="text-2xl mb-2">🎮</div>
+        <div className="text-sm animate-pulse">Cargando Mall...</div>
+      </div>
+    </div>
+  ),
+});
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <main className="flex flex-col items-center justify-center min-h-screen bg-[#0d0d1a]">
+      <div className="w-full max-w-3xl px-4">
+        <h1 className="text-center font-mono text-white text-lg mb-2 tracking-widest">
+          🏬 {CV_DATA.name}&apos;s CV
+        </h1>
+        <p className="text-center font-mono text-gray-400 text-xs mb-4">
+          {CV_DATA.title} &middot; Curriculum Vitae Interactivo
+        </p>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
+        <div
+          className="w-full relative bg-black rounded-lg overflow-hidden shadow-2xl border border-gray-800"
+          style={{ aspectRatio: "480/320" }}
+        >
+          <GameComponent />
+        </div>
+
+        <div className="mt-4 font-mono text-gray-500 text-xs text-center space-x-4">
+          <span>⬆⬇⬅➡ / WASD: mover</span>
+          <span>&nbsp;·&nbsp; ESPACIO: interactuar</span>
+          <span>&nbsp;·&nbsp; ESC: salir de tienda</span>
+        </div>
+
+        <div className="mt-4 flex justify-center gap-6 font-mono text-xs">
           <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+            href={CV_DATA.github}
             target="_blank"
             rel="noopener noreferrer"
+            className="text-blue-400 hover:text-blue-300 transition-colors"
           >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
+            GitHub
           </a>
           <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+            href={CV_DATA.linkedin}
             target="_blank"
             rel="noopener noreferrer"
+            className="text-blue-400 hover:text-blue-300 transition-colors"
           >
-            Read our docs
+            LinkedIn
+          </a>
+          <a
+            href={`mailto:${CV_DATA.email}`}
+            className="text-blue-400 hover:text-blue-300 transition-colors"
+          >
+            Email
           </a>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </div>
+    </main>
   );
 }
