@@ -4,6 +4,8 @@ import { ASSET_KEYS, GAME_W, GAME_H } from "../config/assets.config";
 import { SkillPokemon } from "../objects/SkillPokemon";
 import { Player } from "../objects/Player";
 import { t } from "../config/locale";
+import { SoundManager } from "../audio/SoundManager";
+import { bindMuteEvent } from "../audio/bindMute";
 
 const STORAGE_KEY = "mariano_cv_captured_skills";
 
@@ -33,6 +35,7 @@ export class KnowledgeShopScene extends Phaser.Scene {
   private battleCompleteHandler?: (data: { captured: boolean; skillId: string }) => void;
   private recentlyEncountered = new Set<string>();
   private resetConfirmOverlay?: Phaser.GameObjects.Container;
+  private sfx!: SoundManager;
 
   constructor() {
     super({ key: "KnowledgeShopScene" });
@@ -84,8 +87,18 @@ export class KnowledgeShopScene extends Phaser.Scene {
       if (this.resetConfirmOverlay) this.confirmReset();
     });
 
+    const sm = this.sound as Phaser.Sound.WebAudioSoundManager;
+    this.sfx = new SoundManager(sm.context, 0.15);
+    this.sfx.startSkillsMusic();
+
+    const unbindMute = bindMuteEvent(this.sfx);
+    this.events.on(Phaser.Scenes.Events.PAUSE,  () => this.sfx.stopMusic());
+    this.events.on(Phaser.Scenes.Events.RESUME, () => this.sfx.startSkillsMusic());
+
     // Clean up any pending battle-complete listener when this scene shuts down
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.sfx.stopMusic();
+      unbindMute();
       if (this.battleCompleteHandler) {
         this.game.events.off("battle-complete", this.battleCompleteHandler);
         this.battleCompleteHandler = undefined;

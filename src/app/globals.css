@@ -24,3 +24,38 @@ canvas {
     text-wrap: balance;
   }
 }
+
+/* Desktop default */
+.game-container {
+  aspect-ratio: 480 / 320;
+}
+
+/* ── Mobile landscape: game fills the full screen ───────────────────── */
+@media (max-height: 500px) and (orientation: landscape) {
+  body {
+    overflow: hidden;
+  }
+
+  .mobile-hidden {
+    display: none !important;
+  }
+
+  .game-wrapper {
+    max-width: 100vw !important;
+    padding: 0 !important;
+    height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .game-container {
+    /* Let the canvas fill available height, maintain 480:320 ratio */
+    height: 100dvh !important;
+    width: auto !important;
+    aspect-ratio: 480 / 320;
+    max-width: 100vw;
+    border-radius: 0 !important;
+    border: none !important;
+  }
+}

@@ -1,6 +1,8 @@
 import * as Phaser from "phaser";
 import { Skill } from "../config/skills.config";
 import { t } from "../config/locale";
+import { SoundManager } from "../audio/SoundManager";
+import { bindMuteEvent } from "../audio/bindMute";
 
 interface BattleData {
   skill: Skill;
@@ -26,6 +28,8 @@ export class BattleScene extends Phaser.Scene {
   private menuLabels: string[] = [];
   private menuState: MenuState = "main";
 
+  private sfx!: SoundManager;
+
   private upKey!: Phaser.Input.Keyboard.Key;
   private downKey!: Phaser.Input.Keyboard.Key;
   private confirmKey!: Phaser.Input.Keyboard.Key;
@@ -49,6 +53,9 @@ export class BattleScene extends Phaser.Scene {
   create() {
     this.scene.bringToTop(); // ensure we render above any active game scene
     this.menuLabels = [t("battle.fight"), t("battle.capture"), t("battle.run")];
+
+    const sm = this.sound as Phaser.Sound.WebAudioSoundManager;
+    this.sfx = new SoundManager(sm.context);
     const { width, height } = this.cameras.main;
 
     // Background
@@ -117,8 +124,13 @@ export class BattleScene extends Phaser.Scene {
       this.selectAction();
     });
 
+    const unbindMute = bindMuteEvent(this.sfx);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => unbindMute());
+
     // Entrance animation
     this.cameras.main.flash(300, 255, 255, 255);
+    this.sfx.sfxBattleIntro();
+    this.time.delayedCall(600, () => this.sfx.startBattleMusic());
   }
 
   private drawBattleCard(x: number, y: number, name: string, level: string, _isEnemy: boolean) {
@@ -222,11 +234,13 @@ export class BattleScene extends Phaser.Scene {
       repeat: 3,
     });
 
+    this.sfx.sfxHit();
     this.battleLog.setText(t("battle.commit", { dmg }));
     this.drawHpBar(this.enemyHpBar, 80, 48, this.enemyCurrentHp, this.skill.hp, false);
 
     this.time.delayedCall(900, () => {
       if (this.enemyCurrentHp <= 0) {
+        this.sfx.sfxDefeated();
         this.battleLog.setText(t("battle.defeated", { name: this.skill.name }));
         this.enemySprite.setAlpha(0.3);
         this.time.delayedCall(1500, () => this.exitBattle(false));
@@ -264,6 +278,7 @@ export class BattleScene extends Phaser.Scene {
     ball.fillCircle(0, 0, 3);
     ball.setPosition(width * 0.25, height * 0.52);
 
+    this.sfx.sfxBallThrow();
     this.tweens.add({
       targets: ball,
       x: this.enemySprite.x,
@@ -273,6 +288,7 @@ export class BattleScene extends Phaser.Scene {
       onComplete: () => {
         ball.destroy();
         if (success) {
+          this.sfx.sfxCapture();
           this.battleLog.setText(t("battle.captured", { name: this.skill.name }));
           this.enemySprite.setTint(0x4444ff);
           this.cameras.main.flash(200, 255, 255, 0);
@@ -280,6 +296,7 @@ export class BattleScene extends Phaser.Scene {
             this.exitBattle(true);
           });
         } else {
+          this.sfx.sfxEscapeBall();
           this.enemySprite.setTint(0xff4444);
           this.time.delayedCall(300, () => this.enemySprite.clearTint());
           this.battleLog.setText(t("battle.escaped_ball", { name: this.skill.name }));
@@ -290,12 +307,14 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private doRun() {
+    this.sfx.sfxRun();
     this.battleLog.setText(t("battle.ran"));
     this.cameras.main.fadeOut(400, 0, 0, 0);
     this.time.delayedCall(500, () => this.exitBattle(false));
   }
 
   private exitBattle(captured: boolean) {
+    this.sfx.stopMusic();
     this.game.events.emit("battle-complete", { captured, skillId: this.skill.id });
     this.scene.stop();
   }

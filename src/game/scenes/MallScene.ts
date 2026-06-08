@@ -5,6 +5,8 @@ import { NPCS } from "../config/npc.config";
 import { CV_DATA } from "../config/cv.config";
 import { ASSET_KEYS, GAME_W, GAME_H, MALL_FOREGROUND_ZONES } from "../config/assets.config";
 import { t, toggleLang, getLang } from "../config/locale";
+import { SoundManager } from "../audio/SoundManager";
+import { bindMuteEvent } from "../audio/bindMute";
 
 const STORAGE_KEY = "mariano_cv_captured_skills";
 
@@ -54,6 +56,7 @@ export class MallScene extends Phaser.Scene {
   private fgLayers: Array<{ sprite: Phaser.GameObjects.Image; centerY: number }> = [];
   private spaceKey!: Phaser.Input.Keyboard.Key;
   private hudText!: Phaser.GameObjects.Text;
+  private sfx!: SoundManager;
 
   constructor() {
     super({ key: "MallScene" });
@@ -75,6 +78,15 @@ export class MallScene extends Phaser.Scene {
 
     this.setupInput();
     this.buildHUD(width, height);
+
+    const sm = this.sound as Phaser.Sound.WebAudioSoundManager;
+    this.sfx = new SoundManager(sm.context);
+    this.sfx.startMallMusic();
+
+    const unbindMute = bindMuteEvent(this.sfx);
+    this.events.on(Phaser.Scenes.Events.PAUSE,    () => this.sfx.stopMusic());
+    this.events.on(Phaser.Scenes.Events.RESUME,   () => this.sfx.startMallMusic());
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => { this.sfx.stopMusic(); unbindMute(); });
 
     const visited = localStorage.getItem("mall_visited");
     if (!visited) {
@@ -237,16 +249,10 @@ export class MallScene extends Phaser.Scene {
     hudBg.strokeRect(0, 0, width, 14);
     hudBg.setDepth(30);
 
-    this.hudText = this.add.text(width / 2, 7, this.buildHudString(), {
+    this.hudText = this.add.text(8, 7, this.buildHudString(), {
       fontSize: "7px",
       fontFamily: "monospace",
       color: "#ddddff",
-    }).setOrigin(0.5).setDepth(31);
-
-    this.add.text(6, 7, `${CV_DATA.name}  •  ${CV_DATA.title}`, {
-      fontSize: "7px",
-      fontFamily: "monospace",
-      color: "#aaffaa",
     }).setOrigin(0, 0.5).setDepth(31);
 
     this.add.text(width - 4, 7, t("mall.lang_toggle"), {

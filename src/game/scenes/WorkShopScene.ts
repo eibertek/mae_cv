@@ -4,6 +4,8 @@ import { ASSET_KEYS, GAME_W, GAME_H } from "../config/assets.config";
 import { WorkShowcase } from "../objects/WorkShowcase";
 import { Player } from "../objects/Player";
 import { t } from "../config/locale";
+import { SoundManager } from "../audio/SoundManager";
+import { bindMuteEvent } from "../audio/bindMute";
 
 export class WorkShopScene extends Phaser.Scene {
   private player!: Player;
@@ -11,6 +13,7 @@ export class WorkShopScene extends Phaser.Scene {
   private spaceKey!: Phaser.Input.Keyboard.Key;
   private nearShowcase: WorkShowcase | null = null;
   private dialogActive = false;
+  private sfx!: SoundManager;
 
   constructor() {
     super({ key: "WorkShopScene" });
@@ -54,6 +57,15 @@ export class WorkShopScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(20);
 
     this.cameras.main.setBackgroundColor("#1a0f1a");
+
+    const sm = this.sound as Phaser.Sound.WebAudioSoundManager;
+    this.sfx = new SoundManager(sm.context, 0.15);
+    this.sfx.startWorkMusic();
+
+    const unbindMute = bindMuteEvent(this.sfx);
+    this.events.on(Phaser.Scenes.Events.PAUSE,    () => this.sfx.stopMusic());
+    this.events.on(Phaser.Scenes.Events.RESUME,   () => this.sfx.startWorkMusic());
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => { this.sfx.stopMusic(); unbindMute(); });
   }
 
   private drawShopBackground(width: number, height: number) {
