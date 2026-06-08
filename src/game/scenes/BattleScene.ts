@@ -1,5 +1,6 @@
 import * as Phaser from "phaser";
 import { Skill } from "../config/skills.config";
+import { t } from "../config/locale";
 
 interface BattleData {
   skill: Skill;
@@ -22,7 +23,7 @@ export class BattleScene extends Phaser.Scene {
   private menuItems: Phaser.GameObjects.Text[] = [];
   private selectedAction: BattleAction = "fight";
   private menuActions: BattleAction[] = ["fight", "capture", "run"];
-  private menuLabels = ["⚔ LUCHAR", "🎯 CAPTURAR", "🏃 HUIR"];
+  private menuLabels: string[] = [];
   private menuState: MenuState = "main";
 
   private upKey!: Phaser.Input.Keyboard.Key;
@@ -47,6 +48,7 @@ export class BattleScene extends Phaser.Scene {
 
   create() {
     this.scene.bringToTop(); // ensure we render above any active game scene
+    this.menuLabels = [t("battle.fight"), t("battle.capture"), t("battle.run")];
     const { width, height } = this.cameras.main;
 
     // Background
@@ -85,7 +87,7 @@ export class BattleScene extends Phaser.Scene {
     logBg.fillRoundedRect(8, height - 80, width - 16, 72, 4);
     logBg.strokeRoundedRect(8, height - 80, width - 16, 72, 4);
 
-    this.battleLog = this.add.text(16, height - 72, `¡Un ${this.skill.name} salvaje apareció!`, {
+    this.battleLog = this.add.text(16, height - 72, t("battle.appeared", { name: this.skill.name }), {
       fontSize: "9px",
       fontFamily: "monospace",
       color: "#ffffff",
@@ -220,12 +222,12 @@ export class BattleScene extends Phaser.Scene {
       repeat: 3,
     });
 
-    this.battleLog.setText(`Mariano usó "Commit Push"!\n¡Causó ${dmg} de daño!`);
+    this.battleLog.setText(t("battle.commit", { dmg }));
     this.drawHpBar(this.enemyHpBar, 80, 48, this.enemyCurrentHp, this.skill.hp, false);
 
     this.time.delayedCall(900, () => {
       if (this.enemyCurrentHp <= 0) {
-        this.battleLog.setText(`¡${this.skill.name} fue derrotado!\n(Intentá capturarlo antes de derrotarlo)`);
+        this.battleLog.setText(t("battle.defeated", { name: this.skill.name }));
         this.enemySprite.setAlpha(0.3);
         this.time.delayedCall(1500, () => this.exitBattle(false));
         return;
@@ -236,7 +238,7 @@ export class BattleScene extends Phaser.Scene {
       this.playerHp = Math.max(0, this.playerHp - eDmg);
       this.drawHpBar(this.playerHpBar, this.cameras.main.width - 24 - 120 + 10, this.cameras.main.height - 72, this.playerHp, this.maxPlayerHp, true);
 
-      this.battleLog.setText(`¡${this.skill.name} contraatacó!\n¡Hizo ${eDmg} de daño! (HP enemigo: ${this.enemyCurrentHp}/${this.skill.hp})`);
+      this.battleLog.setText(t("battle.counterattack", { name: this.skill.name, eDmg, current: this.enemyCurrentHp, max: this.skill.hp }));
       this.canInput = true;
     });
   }
@@ -245,7 +247,7 @@ export class BattleScene extends Phaser.Scene {
     const hpRatio = this.enemyCurrentHp / this.skill.hp;
 
     if (hpRatio > 0.3) {
-      this.battleLog.setText(`¡${this.skill.name} tiene demasiada energía!\nReducí sus HP por debajo del 30% para capturarlo.`);
+      this.battleLog.setText(t("battle.too_strong", { name: this.skill.name }));
       this.time.delayedCall(1600, () => { this.canInput = true; });
       return;
     }
@@ -271,7 +273,7 @@ export class BattleScene extends Phaser.Scene {
       onComplete: () => {
         ball.destroy();
         if (success) {
-          this.battleLog.setText(`¡${this.skill.name} fue capturado!\n✅ Añadido a tus habilidades.`);
+          this.battleLog.setText(t("battle.captured", { name: this.skill.name }));
           this.enemySprite.setTint(0x4444ff);
           this.cameras.main.flash(200, 255, 255, 0);
           this.time.delayedCall(1500, () => {
@@ -280,7 +282,7 @@ export class BattleScene extends Phaser.Scene {
         } else {
           this.enemySprite.setTint(0xff4444);
           this.time.delayedCall(300, () => this.enemySprite.clearTint());
-          this.battleLog.setText(`¡${this.skill.name} escapó de la Pokébola!\n¡Seguí intentando!`);
+          this.battleLog.setText(t("battle.escaped_ball", { name: this.skill.name }));
           this.time.delayedCall(1200, () => { this.canInput = true; });
         }
       },
@@ -288,7 +290,7 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private doRun() {
-    this.battleLog.setText("¡Te retiraste de la batalla!");
+    this.battleLog.setText(t("battle.ran"));
     this.cameras.main.fadeOut(400, 0, 0, 0);
     this.time.delayedCall(500, () => this.exitBattle(false));
   }

@@ -3,6 +3,7 @@ import { SKILLS } from "../config/skills.config";
 import { ASSET_KEYS, GAME_W, GAME_H } from "../config/assets.config";
 import { SkillPokemon } from "../objects/SkillPokemon";
 import { Player } from "../objects/Player";
+import { t } from "../config/locale";
 
 const STORAGE_KEY = "mariano_cv_captured_skills";
 
@@ -92,14 +93,14 @@ export class KnowledgeShopScene extends Phaser.Scene {
     });
 
     // Title
-    this.add.text(width / 2, 18, "🎮 TIENDA DE HABILIDADES", {
+    this.add.text(width / 2, 18, t("knowledge.title"), {
       fontSize: "12px",
       fontFamily: "monospace",
       color: "#ffff44",
       fontStyle: "bold",
     }).setOrigin(0.5).setDepth(20);
 
-    this.add.text(width / 2, 34, "Capturá las skills de Mariano  |  ESC = Salir", {
+    this.add.text(width / 2, 34, t("knowledge.subtitle"), {
       fontSize: "8px",
       fontFamily: "monospace",
       color: "#aaaaaa",
@@ -170,13 +171,13 @@ export class KnowledgeShopScene extends Phaser.Scene {
     hudBg.fillRect(0, height - 28, width, 28);
     hudBg.strokeRect(0, height - 28, width, 28);
 
-    this.hudText = this.add.text(width / 2, height - 14, `Capturados: ${captured} / ${total}`, {
+    this.hudText = this.add.text(width / 2, height - 14, t("knowledge.captured", { captured, total }), {
       fontSize: "9px",
       fontFamily: "monospace",
       color: "#ffdd44",
     }).setOrigin(0.5).setDepth(20);
 
-    this.add.text(width - 4, height - 14, "[R] Reset", {
+    this.add.text(width - 4, height - 14, t("knowledge.reset"), {
       fontSize: "7px", fontFamily: "monospace", color: "#ff6666",
     }).setOrigin(1, 0.5).setDepth(20);
 
@@ -192,7 +193,7 @@ export class KnowledgeShopScene extends Phaser.Scene {
   private refreshHUD() {
     const captured = this.capturedIds.length;
     const total = SKILLS.length;
-    this.hudText.setText(`Capturados: ${captured} / ${total}`);
+    this.hudText.setText(t("knowledge.captured", { captured, total }));
   }
 
   private showResetConfirm(width: number, height: number) {
@@ -205,11 +206,11 @@ export class KnowledgeShopScene extends Phaser.Scene {
     bg.fillRoundedRect(cx - 110, cy - 30, 220, 60, 6);
     bg.strokeRoundedRect(cx - 110, cy - 30, 220, 60, 6);
 
-    const title = this.add.text(cx, cy - 12, "¿Resetear todas las skills?", {
+    const title = this.add.text(cx, cy - 12, t("knowledge.reset_confirm"), {
       fontSize: "9px", fontFamily: "monospace", color: "#ff4444", fontStyle: "bold",
     }).setOrigin(0.5);
 
-    const hint = this.add.text(cx, cy + 8, "[R / ENTER] Confirmar   [ESC] Cancelar", {
+    const hint = this.add.text(cx, cy + 8, t("knowledge.reset_hint"), {
       fontSize: "7px", fontFamily: "monospace", color: "#aaaaaa",
     }).setOrigin(0.5);
 
@@ -227,7 +228,7 @@ export class KnowledgeShopScene extends Phaser.Scene {
     this.pokemons.forEach(p => p.resetCaptured());
     this.refreshHUD();
     this.hideResetConfirm();
-    this.showToast("Skills reseteadas");
+    this.showToast(t("knowledge.reset_done"));
   }
 
   private showToast(text: string) {

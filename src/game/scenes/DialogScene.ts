@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { t } from "../config/locale";
 
 interface DialogConfig {
   speakerName: string;
@@ -60,7 +61,7 @@ export class DialogScene extends Phaser.Scene {
       lineSpacing: 4,
     }).setDepth(20);
 
-    this.advanceHint = this.add.text(width - 18, boxY + boxH - 14, "▼ ESPACIO", {
+    this.advanceHint = this.add.text(width - 18, boxY + boxH - 14, t("dialog.advance"), {
       fontSize: "7px",
       fontFamily: "monospace",
       color: "#aaaaff",
@@ -149,7 +150,7 @@ export class DialogScene extends Phaser.Scene {
 
     this.bodyText.setColor("#44ffcc");
     this.bodyText.setText(`🔗  ${this.link!.label}`);
-    this.advanceHint.setText("[ESPACIO] Abrir  ·  [ESC] Cerrar");
+    this.advanceHint.setText(t("dialog.open_hint"));
     this.advanceHint.setColor("#44ffcc");
     this.advanceHint.setVisible(true);
     this.arrowIndicator.setVisible(false);

@@ -1,5 +1,6 @@
 import * as Phaser from "phaser";
 import { NPCConfig } from "../config/npc.config";
+import { getLang } from "../config/locale";
 
 export class NPC extends Phaser.Physics.Arcade.Sprite {
   public npcData: NPCConfig;
@@ -16,7 +17,9 @@ export class NPC extends Phaser.Physics.Arcade.Sprite {
 
     this.setScale(0.07);
 
-    this.nameTag = scene.add.text(data.position.x, data.position.y - 22, data.name, {
+    const displayName = typeof data.name === "string" ? data.name : data.name[getLang()] ?? data.name.en;
+
+    this.nameTag = scene.add.text(data.position.x, data.position.y - 22, displayName, {
       fontSize: "8px",
       fontFamily: "monospace",
       color: "#ffffff",
@@ -24,7 +27,7 @@ export class NPC extends Phaser.Physics.Arcade.Sprite {
       padding: { x: 3, y: 2 },
     }).setOrigin(0.5, 1).setDepth(10);
 
-    this.interactHint = scene.add.text(data.position.x, data.position.y - 36, "[ESPACIO]", {
+    this.interactHint = scene.add.text(data.position.x, data.position.y - 36, "[SPACE]", {
       fontSize: "7px",
       fontFamily: "monospace",
       color: "#ffff00",
@@ -34,7 +37,6 @@ export class NPC extends Phaser.Physics.Arcade.Sprite {
 
     this.setDepth(2);
 
-    // Idle bob animation
     scene.tweens.add({
       targets: [this],
       y: data.position.y - 2,
@@ -54,8 +56,19 @@ export class NPC extends Phaser.Physics.Arcade.Sprite {
     this.interactHint.setVisible(show);
   }
 
-  getDialogs(trigger = "default") {
-    return this.npcData.dialogs.find((d) => d.trigger === trigger)?.messages ?? [];
+  getDialogs(trigger = "default"): string[] {
+    const entry = this.npcData.dialogs.find((d) => d.trigger === trigger);
+    if (!entry) return [];
+    const msgs = entry.messages;
+    if (Array.isArray(msgs)) return msgs;
+    return msgs[getLang()] ?? msgs.en;
+  }
+
+  getLinkLabel(): string | undefined {
+    if (!this.npcData.link) return undefined;
+    const label = this.npcData.link.label;
+    if (typeof label === "string") return label;
+    return label[getLang()] ?? label.en;
   }
 
   destroy(fromScene?: boolean) {

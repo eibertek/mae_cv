@@ -1,5 +1,6 @@
 import * as Phaser from "phaser";
 import { Work } from "../config/works.config";
+import { getLang } from "../config/locale";
 
 export class WorkShowcase extends Phaser.GameObjects.Container {
   public work: Work;
@@ -77,13 +78,16 @@ export class WorkShowcase extends Phaser.GameObjects.Container {
   }
 
   buildDialogMessages(): string[] {
-    return [
-      `🏢 ${this.work.company}`,
-      `💼 ${this.work.role}`,
-      `📅 ${this.work.period}`,
-      this.work.description,
-      `⚡ Tecnologías: ${this.work.technologies.join(", ")}`,
-      ...this.work.achievements.map((a) => `✅ ${a}`),
-    ];
+    const lang = getLang();
+    const desc = this.work.description[lang] ?? this.work.description.en;
+    const achievements = this.work.achievements[lang] ?? this.work.achievements.en;
+    const msgs: string[] = [];
+    msgs.push(`${this.work.role}\n📅 ${this.work.period}`);
+    msgs.push(desc);
+    msgs.push(`⚡ ${this.work.technologies.join("  ·  ")}`);
+    if (achievements.length > 0) {
+      msgs.push(achievements.map(a => `• ${a}`).join("\n"));
+    }
+    return msgs;
   }
 }

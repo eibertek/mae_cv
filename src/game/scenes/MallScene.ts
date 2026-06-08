@@ -4,6 +4,7 @@ import { NPC } from "../objects/NPC";
 import { NPCS } from "../config/npc.config";
 import { CV_DATA } from "../config/cv.config";
 import { ASSET_KEYS, GAME_W, GAME_H, MALL_FOREGROUND_ZONES } from "../config/assets.config";
+import { t, toggleLang, getLang } from "../config/locale";
 
 const STORAGE_KEY = "mariano_cv_captured_skills";
 
@@ -79,9 +80,7 @@ export class MallScene extends Phaser.Scene {
     if (!visited) {
       localStorage.setItem("mall_visited", "1");
       this.time.delayedCall(400, () => {
-        this.showQuickToast(
-          `¡Bienvenido al Mall de ${CV_DATA.name}! Usá flechas/WASD para moverte.`
-        );
+        this.showQuickToast(t("mall.welcome", { name: CV_DATA.name }));
       });
     }
   }
@@ -156,8 +155,8 @@ export class MallScene extends Phaser.Scene {
       });
     };
 
-    addLabel(ZONE_LEFT.x,  ZONE_LEFT.y,  "HABILIDADES\n[ ENTRAR ]");
-    addLabel(ZONE_RIGHT.x, ZONE_RIGHT.y, "EXPERIENCIA\n[ ENTRAR ]");
+    addLabel(ZONE_LEFT.x,  ZONE_LEFT.y,  t("zone.knowledge"));
+    addLabel(ZONE_RIGHT.x, ZONE_RIGHT.y, t("zone.work"));
   }
 
   // ── NPCs ────────────────────────────────────────────────────────────────────
@@ -176,8 +175,8 @@ export class MallScene extends Phaser.Scene {
       this.zoneTriggers.push({ zone, sceneKey, label });
     };
 
-    addZone(ZONE_LEFT.x,  ZONE_LEFT.y,  "KnowledgeShopScene", "HABILIDADES");
-    addZone(ZONE_RIGHT.x, ZONE_RIGHT.y, "WorkShopScene",      "EXPERIENCIA");
+    addZone(ZONE_LEFT.x,  ZONE_LEFT.y,  "KnowledgeShopScene", getLang() === "en" ? "SKILLS" : "HABILIDADES");
+    addZone(ZONE_RIGHT.x, ZONE_RIGHT.y, "WorkShopScene",      getLang() === "en" ? "EXPERIENCE" : "EXPERIENCIA");
     void width; // used by callers, kept in signature for symmetry with other scenes
   }
 
@@ -189,6 +188,13 @@ export class MallScene extends Phaser.Scene {
     this.input.keyboard!
       .addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
       .on("down", () => this.interactWithNearNPC());
+
+    // L — toggle language and restart scene to apply
+    this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.L).on("down", () => {
+      if (this.dialogActive) return;
+      toggleLang();
+      this.scene.restart();
+    });
   }
 
   private interactWithNearNPC() {
@@ -197,16 +203,23 @@ export class MallScene extends Phaser.Scene {
     this.player.isLocked = true;
 
     const messages = this.nearNPC.getDialogs("default");
-    const name = this.nearNPC.npcData.name;
+    const npc = this.nearNPC!;
+    const speakerName = typeof npc.npcData.name === "string"
+      ? npc.npcData.name
+      : npc.npcData.name[getLang()] ?? npc.npcData.name.en;
+    const linkLabel = npc.getLinkLabel();
+    const link = npc.npcData.link && linkLabel
+      ? { url: npc.npcData.link.url, label: linkLabel }
+      : undefined;
 
     this.scene.launch("DialogScene");
     const dialogScene = this.scene.get("DialogScene") as import("./DialogScene").DialogScene;
 
     this.time.delayedCall(50, () => {
       dialogScene.openDialog({
-        speakerName: name,
+        speakerName,
         messages,
-        link: this.nearNPC!.npcData.link,
+        link,
         onComplete: () => {
           this.dialogActive = false;
           this.player.isLocked = false;
@@ -235,11 +248,17 @@ export class MallScene extends Phaser.Scene {
       fontFamily: "monospace",
       color: "#aaffaa",
     }).setOrigin(0, 0.5).setDepth(31);
+
+    this.add.text(width - 4, 7, t("mall.lang_toggle"), {
+      fontSize: "7px",
+      fontFamily: "monospace",
+      color: "#ffcc44",
+    }).setOrigin(1, 0.5).setDepth(31);
   }
 
   private buildHudString() {
     const captured = getCapturedCount();
-    return `Skills: ${captured}/8  •  WASD/flechas: mover  •  ESPACIO: interactuar`;
+    return t("mall.hud", { captured, total: 8 });
   }
 
   private showQuickToast(text: string) {
@@ -303,7 +322,7 @@ export class MallScene extends Phaser.Scene {
       );
       if (dist < 40) {
         this.player.isLocked = true;
-        this.showQuickToast(`Entrando a ${label}...`);
+        this.showQuickToast(t("mall.entering", { label }));
         this.cameras.main.fadeOut(400, 0, 0, 0);
         this.time.delayedCall(450, () => {
           this.scene.pause();

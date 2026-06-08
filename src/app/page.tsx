@@ -35,6 +35,8 @@ export default function Home() {
           <span>⬆⬇⬅➡ / WASD: mover</span>
           <span>&nbsp;·&nbsp; ESPACIO: interactuar</span>
           <span>&nbsp;·&nbsp; ESC: salir de tienda</span>
+          <span>&nbsp;·&nbsp; <kbd className="bg-gray-800 text-gray-300 px-1 py-0.5 rounded">L</kbd> cambiar idioma (EN/ES)</span>
+          <span>&nbsp;·&nbsp; <kbd className="bg-gray-800 text-gray-300 px-1 py-0.5 rounded">R</kbd> resetear skills capturadas</span>
         </div>
 
         <div className="mt-4 flex justify-center gap-6 font-mono text-xs">

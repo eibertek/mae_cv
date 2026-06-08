@@ -3,6 +3,7 @@ import { WORKS } from "../config/works.config";
 import { ASSET_KEYS, GAME_W, GAME_H } from "../config/assets.config";
 import { WorkShowcase } from "../objects/WorkShowcase";
 import { Player } from "../objects/Player";
+import { t } from "../config/locale";
 
 export class WorkShopScene extends Phaser.Scene {
   private player!: Player;
@@ -39,14 +40,14 @@ export class WorkShopScene extends Phaser.Scene {
     });
 
     // Title
-    this.add.text(width / 2, 18, "💼 TIENDA DE EXPERIENCIA", {
+    this.add.text(width / 2, 18, t("work.title"), {
       fontSize: "12px",
       fontFamily: "monospace",
       color: "#ffdd44",
       fontStyle: "bold",
     }).setOrigin(0.5).setDepth(20);
 
-    this.add.text(width / 2, 34, "Acercate a las vitrinas y presioná ESPACIO  |  ESC = Salir", {
+    this.add.text(width / 2, 34, t("work.subtitle"), {
       fontSize: "8px",
       fontFamily: "monospace",
       color: "#aaaaaa",
@@ -68,19 +69,26 @@ export class WorkShopScene extends Phaser.Scene {
     overlay.setDepth(0);
   }
 
-  private spawnShowcases(_width: number, _height: number) {
-    const positions = [
-      { x: 100, y: 140 },
-      { x: 240, y: 140 },
-      { x: 380, y: 140 },
-    ];
+  private spawnShowcases(width: number, _height: number) {
+    // 2 rows × 4 cols grid to fit all 8 jobs
+    const cols = 4;
+    const rowY = [115, 225];
+    const colX = [55, 170, 290, 415];
+
+    // Row labels
+    const labelStyle = { fontSize: "7px", fontFamily: "monospace", color: "#888888" };
+    this.add.text(4, rowY[0] - 52, t("work.recent"),  labelStyle).setDepth(10);
+    this.add.text(4, rowY[1] - 52, t("work.history"), labelStyle).setDepth(10);
 
     WORKS.forEach((work, i) => {
-      const pos = positions[i % positions.length];
-      const showcase = new WorkShowcase(this, pos.x, pos.y, work);
+      const row = Math.floor(i / cols);
+      const col = i % cols;
+      const x = colX[col] ?? width / 2;
+      const y = rowY[row] ?? 225;
+
+      const showcase = new WorkShowcase(this, x, y, work);
       this.showcases.push(showcase);
 
-      // Add physics to interact zone
       const zone = showcase.getInteractZone();
       this.physics.world.enable(zone, Phaser.Physics.Arcade.STATIC_BODY);
     });
